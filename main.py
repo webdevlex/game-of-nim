@@ -2,6 +2,7 @@ import pygame
 import sys
 from menu import draw_menu, handle_menu_events
 from game import game_loop
+from settings import settings_menu  # Import the settings menu
 import config
 
 # Initialize Pygame
@@ -28,7 +29,7 @@ def main():
                     game_loop(screen)  # Start the game loop
                     in_menu = True  # Return to menu after the game
                 elif option_selected == "Settings":
-                    print("Settings are not implemented yet.")
+                    settings_menu(screen)  # Open the settings menu
                 elif option_selected == "Exit":
                     running = False
 
