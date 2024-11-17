@@ -1,6 +1,7 @@
 import pygame
 import sys
 import config
+import random  # Import random for bot decisions
 
 
 def game_loop(screen):
@@ -63,6 +64,24 @@ def game_loop(screen):
     total_height = len(rows) * row_spacing
     start_y = (config.WINDOW_SIZE[1] - total_height) // 2 + row_vertical_offset
 
+    def bot_turn():
+        """Simulate a bot turn by making a random valid move."""
+        nonlocal game_over, winner, current_player, rows
+        valid_rows = [i for i, count in enumerate(rows) if count > 0]
+        if valid_rows:
+            selected_row = random.choice(valid_rows)
+            items_to_remove = random.randint(1, rows[selected_row])
+            rows[selected_row] -= items_to_remove
+            print(f"Bot removed {items_to_remove} item(s) from row {selected_row}.")
+
+            # Check if the game is over
+            if sum(rows) == 1:  # Only 1 item left
+                game_over = True
+                winner = "Bot"
+            else:
+                # Switch to human's turn
+                current_player = config.Players.PLAYER_1
+
     running = True
     while running:
         # Event handling
@@ -87,29 +106,24 @@ def game_loop(screen):
                         game_over,
                         winner,
                     ) = reset_game()
-                elif not game_over:
+                elif not game_over and current_player == config.Players.PLAYER_1:
                     if play_button_rect.collidepoint(mouse_pos) and selection_made:
                         # Remove selected items from the row
                         for row, items in selected_items.items():
                             if items:
                                 rows[row] -= len(items)
-                                print(f"Removed {len(items)} items from row {row}.")
+                                print(
+                                    f"Human removed {len(items)} item(s) from row {row}."
+                                )
                                 break
                         # Check for game over
                         if sum(rows) == 1:  # Only 1 item left
                             game_over = True
-                            winner = (
-                                "Human"
-                                if current_player == config.Players.PLAYER_1
-                                else "Bot"
-                            )
+                            winner = "Human"
                         else:
-                            # Switch players
-                            current_player = (
-                                config.Players.PLAYER_2
-                                if current_player == config.Players.PLAYER_1
-                                else config.Players.PLAYER_1
-                            )
+                            # Switch to bot's turn
+                            current_player = config.Players.PLAYER_2
+                            bot_turn()
                         # Reset selection
                         selected_items = {i: [] for i in range(len(rows))}
                         selection_made = False
@@ -123,6 +137,10 @@ def game_loop(screen):
                 current_row = None
                 if any(selected_items[row] for row in selected_items):
                     selection_made = True
+
+        # Simulate bot turn if it's the bot's turn and the game isn't over
+        if not game_over and current_player == config.Players.PLAYER_2:
+            bot_turn()
 
         # Draw game state
         screen.fill(config.BACKGROUND_COLOR)
@@ -204,7 +222,11 @@ def game_loop(screen):
         screen.blit(player_2_text, player_2_rect)
 
         # Draw Play Button if selection is made and game isn't over
-        if not game_over and selection_made:
+        if (
+            not game_over
+            and current_player == config.Players.PLAYER_1
+            and selection_made
+        ):
             if play_button_rect.collidepoint(mouse_pos):
                 play_button_text = config.BODY_FONT.render(
                     "Play", True, config.HIGHLIGHT_COLOR
