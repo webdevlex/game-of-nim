@@ -57,10 +57,11 @@ def game_loop(screen):
 
     object_size = 30  # Diameter of the circles representing objects
     row_spacing = 80  # Spacing between rows
+    row_vertical_offset = 40  # Additional vertical offset for rows
 
     # Calculate vertical start position to center the rows
     total_height = len(rows) * row_spacing
-    start_y = (config.WINDOW_SIZE[1] - total_height) // 2
+    start_y = (config.WINDOW_SIZE[1] - total_height) // 2 + row_vertical_offset
 
     running = True
     while running:
