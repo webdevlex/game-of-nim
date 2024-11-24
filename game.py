@@ -82,7 +82,7 @@ def game_loop(screen):
         if best_move:
             selected_row, items_to_remove = best_move
             rows[selected_row] -= items_to_remove
-
+            print(f"Bot removed {items_to_remove} item(s) from row {selected_row}.")
         # Check if the game is over
         if sum(rows) == 1:  # Only 1 item left
             game_over = True
