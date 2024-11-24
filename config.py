@@ -20,6 +20,9 @@ WINDOW_SIZE = (800, 600)
 # Game settings
 ROWS = 5  # Number of rows in the game
 
+# Alpha beta purning settings
+MAX_DEPTH = 4
+
 
 class Players:
     PLAYER_1 = "player_1"

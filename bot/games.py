@@ -7,7 +7,7 @@ from collections import namedtuple
 
 import numpy as np
 
-from utils import vector_add
+from bot.utils import vector_add
 
 GameState = namedtuple("GameState", "to_move, utility, board, moves")
 StochasticGameState = namedtuple(
@@ -118,13 +118,72 @@ def alpha_beta_search(state, game):
         return v
 
     # Body of alpha_beta_search:
-    best_score = -np.inf
+    alpha = -np.inf
     beta = np.inf
+
     best_action = None
     for a in game.actions(state):
-        v = min_value(game.result(state, a), best_score, beta)
-        if v > best_score:
-            best_score = v
+        v = min_value(game.result(state, a), alpha, beta)
+        if v > alpha:
+            alpha = v
+            best_action = a
+    return best_action
+
+
+def depth_limited_alpha_beta_search(state, game, max_depth=3):
+    """
+    Search game to determine the best action using alpha-beta pruning with depth limiting.
+    Uses an evaluation function to approximate values for non-terminal states when the depth limit is reached.
+    """
+
+    player = game.to_move(state)
+
+    # Evaluation function (nimber calculation)
+    def evaluate(state):
+        """Calculate the nimber for the current state."""
+        nim_sum = 0
+        for row in state.board:
+            nim_sum ^= row
+        return (
+            1 if nim_sum != 0 else -1
+        )  # Winning state if nim_sum != 0, else losing state
+
+    # Functions used by alpha-beta with depth limiting
+    def max_value(state, alpha, beta, depth):
+        if game.terminal_test(state):
+            return game.utility(state, player)
+        if depth == 0:
+            return evaluate(state)
+        v = -np.inf
+        for a in game.actions(state):
+            v = max(v, min_value(game.result(state, a), alpha, beta, depth - 1))
+            if v >= beta:
+                return v
+            alpha = max(alpha, v)
+        return v
+
+    def min_value(state, alpha, beta, depth):
+        if game.terminal_test(state):
+            return game.utility(state, player)
+        if depth == 0:
+            return evaluate(state)
+        v = np.inf
+        for a in game.actions(state):
+            v = min(v, max_value(game.result(state, a), alpha, beta, depth - 1))
+            if v <= alpha:
+                return v
+            beta = min(beta, v)
+        return v
+
+    # Body of alpha_beta_search
+    alpha = -np.inf
+    beta = np.inf
+    best_action = None
+
+    for a in game.actions(state):
+        v = min_value(game.result(state, a), alpha, beta, max_depth - 1)
+        if v > alpha:
+            alpha = v
             best_action = a
     return best_action
 

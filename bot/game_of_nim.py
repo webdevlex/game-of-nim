@@ -1,4 +1,4 @@
-from games import *
+from bot.games import *
 
 
 class GameOfNim(Game):
@@ -55,32 +55,3 @@ class GameOfNim(Game):
     def to_move(self, state):
         """Return the player whose move it is in this state."""
         return super().to_move(state)
-
-    def display(self, state):
-        """Display the current board state."""
-        board = state.board
-        print("board: ", board)
-
-    def play_game(self, *players):
-        """Play an n-person, move-alternating game."""
-        state = self.initial
-        while True:
-            for player in players:
-                move = player(self, state)
-                print(move)
-                state = self.result(state, move)
-                self.display(state)
-                if self.terminal_test(state):
-                    return self.utility(state, self.to_move(self.initial))
-
-
-if __name__ == "__main__":
-    # nim = GameOfNim(board=[0, 5, 3, 1])  # Creating the game instance
-    nim = GameOfNim(board=[7, 5, 3, 1])  # a much larger tree to search
-    print("board:", nim.initial.board)  # must be [0, 5, 3, 1]
-
-    utility = nim.play_game(alpha_beta_player, query_player)  # computer moves first
-    if utility < 0:
-        print("MIN won the game")
-    else:
-        print("MAX won the game")

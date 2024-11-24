@@ -1,7 +1,8 @@
 import pygame
 import sys
 import config
-import random  # Import random for bot decisions
+from bot.game_of_nim import GameOfNim
+from bot.games import depth_limited_alpha_beta_search
 
 
 def game_loop(screen):
@@ -65,22 +66,30 @@ def game_loop(screen):
     start_y = (config.WINDOW_SIZE[1] - total_height) // 2 + row_vertical_offset
 
     def bot_turn():
-        """Simulate a bot turn by making a random valid move."""
+        """Simulate the bot's turn using depth-limited alpha-beta pruning."""
         nonlocal game_over, winner, current_player, rows
-        valid_rows = [i for i, count in enumerate(rows) if count > 0]
-        if valid_rows:
-            selected_row = random.choice(valid_rows)
-            items_to_remove = random.randint(1, rows[selected_row])
-            rows[selected_row] -= items_to_remove
-            print(f"Bot removed {items_to_remove} item(s) from row {selected_row}.")
 
-            # Check if the game is over
-            if sum(rows) == 1:  # Only 1 item left
-                game_over = True
-                winner = "Bot"
-            else:
-                # Switch to human's turn
-                current_player = config.Players.PLAYER_1
+        # Create a GameOfNim instance with the current rows as the board state
+        game = GameOfNim(board=rows)
+        state = game.initial
+
+        # Use depth-limited alpha-beta search to find the best move
+        best_move = depth_limited_alpha_beta_search(
+            state, game, max_depth=config.MAX_DEPTH
+        )
+
+        # Apply the move returned by the bot
+        if best_move:
+            selected_row, items_to_remove = best_move
+            rows[selected_row] -= items_to_remove
+
+        # Check if the game is over
+        if sum(rows) == 1:  # Only 1 item left
+            game_over = True
+            winner = "Bot"
+        else:
+            # Switch to the human's turn
+            current_player = config.Players.PLAYER_1
 
     running = True
     while running:
