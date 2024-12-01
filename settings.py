@@ -1,31 +1,55 @@
 import pygame
 import config
+import sys
+
+PLAYER_1 = config.Players.PLAYER_1
+PLAYER_2 = config.Players.PLAYER_2
 
 
 def settings_menu(screen):
     # Fonts and initial settings
-    header_text = config.TITLE_FONT.render("Settings", True, config.TITLE_COLOR)
-    header_rect = header_text.get_rect(center=(config.WINDOW_SIZE[0] // 2, 50))
+    header_text = config.TITLE_FONT.render("SETTINGS", True, config.TITLE_COLOR)
+    header_rect = header_text.get_rect(center=(config.WINDOW_SIZE[0] // 2, 100))
 
-    # Options text
-    player_text = config.BODY_FONT.render(
-        f"Player to go first: {config.DEFAULT_PLAYER.replace('_', ' ').title()}",
-        True,
-        config.OPTION_COLOR,
-    )
-    player_rect = player_text.get_rect(center=(config.WINDOW_SIZE[0] // 2, 150))
+    # Button dimensions and spacing
+    button_width, button_height = 100, 50
+    rows_button_width, rows_button_height = 50, 50
+    spacing = 10
 
-    rows_text = config.BODY_FONT.render(
-        f"Number of rows: {config.ROWS}", True, config.OPTION_COLOR
-    )
-    rows_rect = rows_text.get_rect(center=(config.WINDOW_SIZE[0] // 2, 250))
+    # Starting player layout
+    label_text = config.BODY_FONT.render("Starting player:", True, config.OPTION_COLOR)
+    label_rect = label_text.get_rect(center=((config.WINDOW_SIZE[0] // 4) + 75, 225))
 
-    # Instructions for changing settings
-    instructions_text = config.BODY_FONT.render(
-        "Press P to toggle player, Up/Down to change rows", True, config.OPTION_COLOR
+    human_button_rect = pygame.Rect(
+        (config.WINDOW_SIZE[0] // 2 - button_width - spacing // 2) + 125,
+        200,
+        button_width,
+        button_height,
     )
-    instructions_rect = instructions_text.get_rect(
-        center=(config.WINDOW_SIZE[0] // 2, 350)
+    bot_button_rect = pygame.Rect(
+        (config.WINDOW_SIZE[0] // 2 + spacing // 2) + 125,
+        200,
+        button_width,
+        button_height,
+    )
+
+    # Number of rows layout
+    rows_label_text = config.BODY_FONT.render(
+        "Number of rows:", True, config.OPTION_COLOR
+    )
+    rows_label_rect = rows_label_text.get_rect(
+        center=((config.WINDOW_SIZE[0] // 4) + 75, 300)
+    )
+
+    rows_text_pos = (config.WINDOW_SIZE[0] // 2 - 25, 300)
+    minus_button_rect = pygame.Rect(
+        rows_text_pos[0] + rows_button_width + 30,
+        275,
+        rows_button_width,
+        rows_button_height,
+    )
+    plus_button_rect = pygame.Rect(
+        minus_button_rect.right + spacing, 275, rows_button_width, rows_button_height
     )
 
     # Back button
@@ -42,47 +66,82 @@ def settings_menu(screen):
                 pygame.quit()
                 sys.exit()
             elif event.type == pygame.MOUSEBUTTONDOWN:
-                # Check if back button is clicked
-                if back_rect.collidepoint(event.pos):
-                    # Update the config settings
+                mouse_pos = event.pos
+
+                # Back button logic
+                if back_rect.collidepoint(mouse_pos):
                     config.DEFAULT_PLAYER = current_player
                     config.ROWS = current_rows
-                    return  # Exit settings menu
-            elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_p:
-                    # Toggle player between player_1 and player_2
-                    current_player = (
-                        config.Players.PLAYER_2
-                        if current_player == config.Players.PLAYER_1
-                        else config.Players.PLAYER_1
-                    )
-                elif event.key == pygame.K_UP:
-                    # Increase rows (limit to 10 for example)
-                    if current_rows < 10:
-                        current_rows += 1
-                elif event.key == pygame.K_DOWN:
-                    # Decrease rows (minimum of 1)
-                    if current_rows > 1:
-                        current_rows -= 1
+                    return
 
-        # Update settings display
-        player_text = config.BODY_FONT.render(
-            f"Player to go first: {current_player.replace('_', ' ').title()}",
-            True,
-            config.OPTION_COLOR,
-        )
-        rows_text = config.BODY_FONT.render(
-            f"Number of rows: {current_rows}", True, config.OPTION_COLOR
-        )
+                # Starting player buttons
+                if human_button_rect.collidepoint(mouse_pos):
+                    current_player = PLAYER_1
+                elif bot_button_rect.collidepoint(mouse_pos):
+                    current_player = PLAYER_2
 
-        # Draw the settings menu
+                # Adjust rows
+                if plus_button_rect.collidepoint(mouse_pos) and current_rows < 10:
+                    current_rows += 1
+                elif minus_button_rect.collidepoint(mouse_pos) and current_rows > 2:
+                    current_rows -= 1
+
+        # Draw settings menu
         screen.fill(config.BACKGROUND_COLOR)
         screen.blit(header_text, header_rect)
-        screen.blit(player_text, player_rect)
-        screen.blit(rows_text, rows_rect)
-        screen.blit(instructions_text, instructions_rect)
 
-        # Back button hover effect
+        # Draw starting player layout
+        screen.blit(label_text, label_rect)
+        pygame.draw.rect(
+            screen,
+            (
+                config.HIGHLIGHT_COLOR
+                if current_player == PLAYER_1
+                else config.OPTION_COLOR
+            ),
+            human_button_rect,
+        )
+        pygame.draw.rect(
+            screen,
+            (
+                config.HIGHLIGHT_COLOR
+                if current_player == PLAYER_2
+                else config.OPTION_COLOR
+            ),
+            bot_button_rect,
+        )
+        human_text = config.BODY_FONT.render("HUMAN", True, config.TITLE_COLOR)
+        bot_text = config.BODY_FONT.render("BOT", True, config.TITLE_COLOR)
+        screen.blit(
+            human_text,
+            human_text.get_rect(center=human_button_rect.center),
+        )
+        screen.blit(
+            bot_text,
+            bot_text.get_rect(center=bot_button_rect.center),
+        )
+
+        # Draw number of rows layout
+        screen.blit(rows_label_text, rows_label_rect)
+
+        # Display current number of rows
+        rows_text = config.BODY_FONT.render(str(current_rows), True, config.TITLE_COLOR)
+        screen.blit(
+            rows_text,
+            rows_text.get_rect(
+                center=(rows_text_pos[0] + button_width // 2, rows_text_pos[1])
+            ),
+        )
+
+        # Draw minus and plus buttons
+        pygame.draw.rect(screen, config.OPTION_COLOR, minus_button_rect)
+        pygame.draw.rect(screen, config.OPTION_COLOR, plus_button_rect)
+        minus_text = config.BODY_FONT.render("-", True, config.TITLE_COLOR)
+        plus_text = config.BODY_FONT.render("+", True, config.TITLE_COLOR)
+        screen.blit(minus_text, minus_text.get_rect(center=minus_button_rect.center))
+        screen.blit(plus_text, plus_text.get_rect(center=plus_button_rect.center))
+
+        # Draw back button
         if back_rect.collidepoint(pygame.mouse.get_pos()):
             back_text = config.BODY_FONT.render(
                 "Back to Menu", True, config.HIGHLIGHT_COLOR

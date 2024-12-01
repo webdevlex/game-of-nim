@@ -18,8 +18,8 @@ def draw_menu(screen):
     screen.fill(config.BACKGROUND_COLOR)
 
     # Draw the title
-    title_text = config.TITLE_FONT.render("Game Of Nim", True, config.TITLE_COLOR)
-    title_rect = title_text.get_rect(center=(config.WINDOW_SIZE[0] // 2, 150))
+    title_text = config.TITLE_FONT.render("GAME OF NIM", True, config.TITLE_COLOR)
+    title_rect = title_text.get_rect(center=(config.WINDOW_SIZE[0] // 2, 175))
     screen.blit(title_text, title_rect)
 
     # Draw the options
@@ -37,7 +37,7 @@ def draw_menu(screen):
     pygame.display.flip()
 
 
-def handle_menu_events(mouse_pos, screen):
+def handle_menu_events(mouse_pos):
     # Check which menu option is clicked
     for index, option_rect in enumerate(menu_rects):
         if option_rect.collidepoint(mouse_pos):

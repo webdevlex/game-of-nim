@@ -23,7 +23,7 @@ def main():
             if event.type == pygame.QUIT:
                 running = False
             elif event.type == pygame.MOUSEBUTTONDOWN and in_menu:
-                option_selected = handle_menu_events(event.pos, screen)
+                option_selected = handle_menu_events(event.pos)
                 if option_selected == "New Game":
                     in_menu = False
                     game_loop(screen)  # Start the game loop
