@@ -7,7 +7,7 @@ pygame.font.init()
 BACKGROUND_COLOR = (0, 0, 0)
 TITLE_COLOR = (255, 255, 255)
 OPTION_COLOR = (200, 200, 200)
-HIGHLIGHT_COLOR = (255, 0, 0)
+HIGHLIGHT_COLOR = (16, 254, 76)
 
 # Fonts
 FONT_PATH = r".\assets\fonts\8-Bit Madness.ttf"

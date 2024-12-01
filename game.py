@@ -3,6 +3,8 @@ import sys
 import config
 from bot.game_of_nim import GameOfNim
 from bot.games import depth_limited_alpha_beta_search
+from helpers.get_circle_dimensions import get_circle_dimensions
+import time
 
 
 def game_loop(screen):
@@ -47,7 +49,9 @@ def game_loop(screen):
     ) = reset_game()
 
     # Button setups
-    play_button_text = config.BODY_FONT.render("Play", True, config.OPTION_COLOR)
+    play_button_text = config.BODY_FONT.render(
+        "Confirm Move", True, config.OPTION_COLOR
+    )
     play_button_rect = play_button_text.get_rect(
         center=(config.WINDOW_SIZE[0] // 2, config.WINDOW_SIZE[1] - 50)
     )
@@ -57,23 +61,77 @@ def game_loop(screen):
         center=(config.WINDOW_SIZE[0] // 2, config.WINDOW_SIZE[1] - 50)
     )
 
-    object_size = 30  # Diameter of the circles representing objects
-    row_spacing = 80  # Spacing between rows
-    row_vertical_offset = 40  # Additional vertical offset for rows
+    dimensions = get_circle_dimensions(config.ROWS)
+    object_size = dimensions.get("object_size")
+    row_spacing = dimensions.get("row_spacing")
+    row_vertical_offset = dimensions.get("row_vertical_offset")
 
     # Calculate vertical start position to center the rows
     total_height = len(rows) * row_spacing
     start_y = (config.WINDOW_SIZE[1] - total_height) // 2 + row_vertical_offset
 
     def bot_turn():
-        """Simulate the bot's turn using depth-limited alpha-beta pruning."""
+        """Simulate the bot's turn with an animation of three dots."""
         nonlocal game_over, winner, current_player, rows
 
-        # Create a GameOfNim instance with the current rows as the board state
+        # Show the "thinking" animation
+        start_time = time.time()
+        dot_texts = [".", "..", "..."]
+        dot_index = 0
+
+        while time.time() - start_time < 3:
+            # Clear and redraw screen
+            screen.fill(config.BACKGROUND_COLOR)
+
+            # Redraw static elements (e.g., exit button, rows, player indicators)
+            screen.blit(exit_button_text, exit_button_rect)
+            for row_index, num_objects in enumerate(rows):
+                y_position = start_y + row_index * row_spacing
+                for i in range(num_objects):
+                    x_position = (
+                        config.WINDOW_SIZE[0] // 2
+                        - (num_objects - 1) * object_size
+                        + i * 2 * object_size
+                    )
+                    pygame.draw.circle(
+                        screen,
+                        config.OPTION_COLOR,
+                        (x_position, y_position),
+                        object_size,
+                    )
+
+            # Redraw "Human" text
+            player_1_text = config.BODY_FONT.render("Human", True, config.OPTION_COLOR)
+            player_1_rect = player_1_text.get_rect(
+                topleft=(20, config.WINDOW_SIZE[1] - 50)
+            )
+            screen.blit(player_1_text, player_1_rect)
+
+            # Redraw "Bot" text
+            bot_text = config.BODY_FONT.render("Bot", True, config.HIGHLIGHT_COLOR)
+            bot_rect = bot_text.get_rect(
+                topright=(config.WINDOW_SIZE[0] - 20, config.WINDOW_SIZE[1] - 50)
+            )
+            screen.blit(bot_text, bot_rect)
+
+            # Display the "thinking" dots below the "Bot" text
+            dots_text = config.BODY_FONT.render(
+                dot_texts[dot_index], True, config.HIGHLIGHT_COLOR
+            )
+            dots_rect = dots_text.get_rect(
+                midtop=(bot_rect.centerx, bot_rect.bottom - 10)
+            )
+            screen.blit(dots_text, dots_rect)
+
+            pygame.display.flip()
+
+            # Update the dots every 0.5 seconds
+            time.sleep(0.5)
+            dot_index = (dot_index + 1) % len(dot_texts)
+
+        # Bot calculates the move after 3 seconds
         game = GameOfNim(board=rows)
         state = game.initial
-
-        # Use depth-limited alpha-beta search to find the best move
         best_move = depth_limited_alpha_beta_search(
             state, game, max_depth=config.MAX_DEPTH
         )
@@ -238,11 +296,11 @@ def game_loop(screen):
         ):
             if play_button_rect.collidepoint(mouse_pos):
                 play_button_text = config.BODY_FONT.render(
-                    "Play", True, config.HIGHLIGHT_COLOR
+                    "Confirm Move", True, config.HIGHLIGHT_COLOR
                 )
             else:
                 play_button_text = config.BODY_FONT.render(
-                    "Play", True, config.OPTION_COLOR
+                    "Confirm Move", True, config.OPTION_COLOR
                 )
             screen.blit(play_button_text, play_button_rect)
 
