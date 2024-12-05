@@ -79,7 +79,7 @@ def game_loop(screen):
         dot_texts = [".", "..", "..."]
         dot_index = 0
 
-        while time.time() - start_time < 3:
+        while time.time() - start_time < 2:
             # Clear and redraw screen
             screen.fill(config.BACKGROUND_COLOR)
 

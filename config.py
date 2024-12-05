@@ -22,7 +22,7 @@ WINDOW_SIZE = (800, 600)
 ROWS = 5  # Number of rows in the game
 
 # Alpha beta purning settings
-MAX_DEPTH = 4
+MAX_DEPTH = 3
 
 
 class Players:
